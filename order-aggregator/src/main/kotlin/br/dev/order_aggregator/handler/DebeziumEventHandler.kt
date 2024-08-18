@@ -13,7 +13,10 @@ import mu.KotlinLogging
 import org.apache.kafka.connect.data.Field
 import org.apache.kafka.connect.data.Struct
 import org.apache.kafka.connect.source.SourceRecord
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import java.util.concurrent.Executors
 
 enum class Operation(val value: String){
@@ -54,20 +57,32 @@ class DebeziumEventHandler(
 
             val tableName = (sourceRecordValue.get(io.debezium.data.Envelope.FieldName.SOURCE) as Struct).get("table")
             when(tableName) {
-                "OrderEntity" -> sendEventToOrderTopic(event)
-                "OrderItemEntity" -> sendEventToOrderItemTopic(event)
+                "OrderEntity" -> saveOrderEvent(event)
+                "OrderItemEntity" -> saveOrderItemEvent(event)
             }
         }
     }
 
-    fun sendEventToOrderTopic(event: Map<String, Any>) {
-        val topicArn = "arn:aws:sns:eu-central-1:000000000000:order-debezium-events"
-        snsPublish.publish(topicArn, event.toString())
+    fun saveOrderEvent(event: Map<String, Any>) {
+        transaction {
+            EventEntity.insert {
+                it[eventBody] = event
+                it[createdAt] = LocalDateTime.now()
+                it[processingStatus] = ProcessingStatus.CREATED
+                it[topic] = TopicName.ORDER
+            }
+        }
     }
 
-    fun sendEventToOrderItemTopic(event: Map<String, Any>) {
-        val topicArn = "arn:aws:sns:eu-central-1:000000000000:order-item-debezium-events"
-        snsPublish.publish(topicArn, event.toString())
+    fun saveOrderItemEvent(event: Map<String, Any>) {
+        transaction {
+            EventEntity.insert {
+                it[eventBody] = event
+                it[createdAt] = LocalDateTime.now()
+                it[processingStatus] = ProcessingStatus.CREATED
+                it[topic] = TopicName.ORDER_ITEM
+            }
+        }
     }
 
     val executor = Executors.newSingleThreadExecutor();
@@ -76,7 +91,7 @@ class DebeziumEventHandler(
     fun start() = executor.execute(debeziumEngine)
 
     @PreDestroy
-    fun stop() {
+    fun stops() {
         this.debeziumEngine.close()
     }
 
