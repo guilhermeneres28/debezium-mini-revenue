@@ -1,7 +1,7 @@
 package br.dev.revenue.config
 
-import br.dev.revenue.Orders
-import br.dev.revenue.Revenue
+import br.dev.revenue.entity.OrderEntity
+import br.dev.revenue.entity.RevenueEntity
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
@@ -13,6 +13,6 @@ class SchemaInitializer : ApplicationRunner {
 
     @Transactional
     override fun run(args: ApplicationArguments?) {
-        SchemaUtils.createMissingTablesAndColumns(tables = arrayOf(Orders, Revenue))
+        SchemaUtils.createMissingTablesAndColumns(tables = arrayOf(OrderEntity, RevenueEntity))
     }
 }
