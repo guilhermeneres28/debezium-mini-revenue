@@ -57,8 +57,8 @@ class DebeziumEventHandler(
 
             val tableName = (sourceRecordValue.get(io.debezium.data.Envelope.FieldName.SOURCE) as Struct).get("table")
             when(tableName) {
-                "OrderEntity" -> saveOrderEvent(event)
-                "OrderItemEntity" -> saveOrderItemEvent(event)
+                "orders" -> saveOrderEvent(event)
+                "orders_item" -> saveOrderItemEvent(event)
             }
         }
     }
