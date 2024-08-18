@@ -15,7 +15,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_DB=revenue
+      - POSTGRES_MULTIPLE_DATABASES=revenue,aggregator
       - POSTGRES_PASSWORD=postgres
     volumes:
       - pgdata:/var/lib/postgresql14/data
