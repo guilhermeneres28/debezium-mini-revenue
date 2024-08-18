@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 
 enum class OrderItemType { TICKET, SERVICE_FEE, CANCELATION_FEE }
 
-object OrderItemEntity : IntIdTable() {
+object OrderItemEntity : IntIdTable("orders_item") {
     val orderItemType = enumerationByName("order_item_type", 20, OrderItemType::class)
     val orderExternalId = reference("order_external_id", OrderEntity.externalId, onDelete = ReferenceOption.CASCADE)
     val externalId = varchar("external_id")
